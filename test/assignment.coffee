@@ -296,6 +296,13 @@ test "#1627: prohibit conditional assignment of undefined variables", ->
   
   throws (-> CoffeeScript.compile "-> -> -> x ?= 10"), null, "prohibit (-> -> -> x ?= 10)"
   doesNotThrow (-> CoffeeScript.compile "x = null; -> -> -> x ?= 10"), "allow (x = null; -> -> -> x ?= 10)"
+  
+test "more existential assignment", ->
+  global.temp ?= 0
+  eq global.temp, 0
+  global.temp or= 100
+  eq global.temp, 100
+  delete global.temp
 
 test "#1348, #1216: existential assignment compilation", ->
   nonce = {}
@@ -343,3 +350,18 @@ test "#1838: Regression with variable assignment", ->
   'dave'
 
   eq name, 'dave'
+
+test '#2211: splats in destructured parameters', ->
+  doesNotThrow -> CoffeeScript.compile '([a...]) ->'
+  doesNotThrow -> CoffeeScript.compile '([a...],b) ->'
+  doesNotThrow -> CoffeeScript.compile '([a...],[b...]) ->'
+  throws -> CoffeeScript.compile '([a...,[a...]]) ->'
+  doesNotThrow -> CoffeeScript.compile '([a...,[b...]]) ->'
+
+test '#2213: invocations within destructured parameters', ->
+  throws -> CoffeeScript.compile '([a()])->'
+  throws -> CoffeeScript.compile '([a:b()])->'
+  throws -> CoffeeScript.compile '([a:b.c()])->'
+  throws -> CoffeeScript.compile '({a()})->'
+  throws -> CoffeeScript.compile '({a:b()})->'
+  throws -> CoffeeScript.compile '({a:b.c()})->'
